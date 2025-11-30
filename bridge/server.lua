@@ -133,7 +133,8 @@ function Bridge.removeMoney(source, amount, account)
     end
     
     -- Standalone - use ox_inventory
-    return exports.ox_inventory:RemoveItem(source, 'money', amount) ~= nil
+    local success = exports.ox_inventory:RemoveItem(source, 'money', amount)
+    return success and true or false
 end
 
 ---Add money to player
@@ -255,7 +256,8 @@ end
 ---@return boolean
 function Bridge.removeItem(source, item, count)
     count = count or 1
-    return exports.ox_inventory:RemoveItem(source, item, count) ~= nil
+    local success = exports.ox_inventory:RemoveItem(source, item, count)
+    return success and true or false
 end
 
 ---Add item to player
@@ -266,7 +268,8 @@ end
 ---@return boolean
 function Bridge.addItem(source, item, count, metadata)
     count = count or 1
-    return exports.ox_inventory:AddItem(source, item, count, metadata) ~= nil
+    local success = exports.ox_inventory:AddItem(source, item, count, metadata)
+    return success and true or false
 end
 
 return Bridge

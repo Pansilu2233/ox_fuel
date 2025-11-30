@@ -19,10 +19,15 @@ local function initFramework()
         QBCore = exports['qb-core']:GetCoreObject()
     elseif frameworkName == 'esx' then
         ESX = nil
-        -- ESX uses callbacks
-        while ESX == nil do
+        -- ESX uses callbacks - with timeout to prevent infinite loop
+        local timeout = 50 -- 5 seconds max
+        while ESX == nil and timeout > 0 do
             TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
-            Wait(0)
+            timeout = timeout - 1
+            Wait(100)
+        end
+        if not ESX then
+            print('[ox_fuel] Warning: ESX framework detected but could not initialize')
         end
     elseif frameworkName == 'ox_core' then
         Ox = require '@ox_core.lib.init'
