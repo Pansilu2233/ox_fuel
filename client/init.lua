@@ -14,6 +14,15 @@ local utils = require 'client.utils'
 local state = require 'client.state'
 local fuel  = require 'client.fuel'
 
+-- Lazy load NUI module
+local NUI
+local function getNUI()
+	if not NUI then
+		NUI = require 'client.nui'
+	end
+	return NUI
+end
+
 require 'client.stations'
 
 local function startDrivingVehicle()
@@ -30,11 +39,24 @@ local function startDrivingVehicle()
 
 	SetVehicleFuelLevel(vehicle, vehState.fuel)
 
+	-- Show fuel HUD when entering vehicle (if NUI enabled)
+	local nui = getNUI()
+	if config.UseNUI and config.ShowFuelHUD then
+		nui.showHUD(vehState.fuel)
+	end
+
 	local fuelTick = 0
+	local hudUpdateTick = 0
 
 	while cache.seat == -1 do
 		if GetIsVehicleEngineRunning(vehicle) then
-			if not DoesEntityExist(vehicle) then return end
+			if not DoesEntityExist(vehicle) then
+				-- Hide HUD when vehicle no longer exists
+				if config.UseNUI and config.ShowFuelHUD then
+					nui.hideHUD()
+				end
+				return
+			end
 			SetFuelConsumptionRateMultiplier(config.globalFuelConsumptionRate)
 
 			local fuelAmount = tonumber(vehState.fuel)
@@ -51,16 +73,34 @@ local function startDrivingVehicle()
 
 					fuel.setFuel(vehState, vehicle, newFuel, fuelTick == 0)
 					fuelTick += 1
+
+					-- Update HUD every 3 seconds to reduce overhead
+					hudUpdateTick += 1
+					if config.UseNUI and config.ShowFuelHUD and hudUpdateTick >= 3 then
+						nui.updateHUD(newFuel)
+						hudUpdateTick = 0
+					end
 				end
 			end
 		else
-			if not DoesEntityExist(vehicle) then return end
+			if not DoesEntityExist(vehicle) then
+				-- Hide HUD when vehicle no longer exists
+				if config.UseNUI and config.ShowFuelHUD then
+					nui.hideHUD()
+				end
+				return
+			end
 			SetFuelConsumptionRateMultiplier(0.0)
 		end
 		Wait(1000)
 	end
 
 	fuel.setFuel(vehState, vehicle, vehState.fuel, true)
+
+	-- Hide HUD when leaving vehicle
+	if config.UseNUI and config.ShowFuelHUD then
+		nui.hideHUD()
+	end
 end
 
 if cache.seat == -1 then CreateThread(startDrivingVehicle) end
@@ -72,12 +112,26 @@ lib.onCache('seat', function(seat)
 
 	if seat == -1 then
 		SetTimeout(0, startDrivingVehicle)
+	else
+		-- Hide HUD when not in driver seat
+		local nui = getNUI()
+		if config.UseNUI and config.ShowFuelHUD then
+			nui.hideHUD()
+		end
 	end
 end)
 
 if config.ox_target then return require 'client.target' end
 
 RegisterCommand('startfueling', function()
+	local nui = getNUI()
+
+	-- Check if NUI pump interface is open - if so, close it
+	if config.UseNUI and nui.isPumpOpen then
+		nui.hidePumpInterface()
+		return
+	end
+
 	if state.isFueling or cache.vehicle or lib.progressActive() then return end
 
 	local petrolCan = config.petrolCan.enabled and GetSelectedPedWeapon(cache.ped) == `WEAPON_PETROLCAN`
@@ -127,3 +181,13 @@ end)
 
 RegisterKeyMapping('startfueling', 'Fuel vehicle', 'keyboard', 'e')
 TriggerEvent('chat:removeSuggestion', '/startfueling')
+
+-- Hide all NUI on resource stop
+AddEventHandler('onResourceStop', function(resourceName)
+	if GetCurrentResourceName() == resourceName then
+		local nui = getNUI()
+		if config.UseNUI then
+			nui.hideAll()
+		end
+	end
+end)

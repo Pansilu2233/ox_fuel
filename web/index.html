@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OX Fuel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Fuel HUD Display (shown while driving) -->
+    <div id="fuel-hud" class="fuel-hud hidden">
+        <div class="hud-gauge">
+            <svg class="hud-ring" viewBox="0 0 100 100">
+                <circle class="hud-ring-bg" cx="50" cy="50" r="45"></circle>
+                <circle class="hud-ring-progress" cx="50" cy="50" r="45"></circle>
+            </svg>
+            <div class="hud-content">
+                <i class="fuel-icon">⛽</i>
+                <span class="hud-value">100</span>
+                <span class="hud-unit">%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pump Interface (shown when near fuel pump) -->
+    <div id="pump-interface" class="pump-interface hidden">
+        <div class="pump-container">
+            <div class="pump-header">
+                <h2>Fuel Station</h2>
+                <span class="close-btn" id="close-btn">✕</span>
+            </div>
+
+            <div class="pump-body">
+                <!-- Current Fuel Display -->
+                <div class="fuel-display">
+                    <svg class="fuel-gauge" viewBox="0 0 200 200">
+                        <defs>
+                            <linearGradient id="fuelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:var(--danger-color)"/>
+                                <stop offset="50%" style="stop-color:var(--warning-color)"/>
+                                <stop offset="100%" style="stop-color:var(--primary-color)"/>
+                            </linearGradient>
+                        </defs>
+                        <circle class="gauge-bg" cx="100" cy="100" r="85"></circle>
+                        <circle class="gauge-progress" cx="100" cy="100" r="85"></circle>
+                        <circle class="gauge-target" cx="100" cy="100" r="85"></circle>
+                    </svg>
+                    <div class="gauge-content">
+                        <div class="gauge-icon">⛽</div>
+                        <div class="gauge-values">
+                            <span class="current-fuel">75</span>
+                            <span class="fuel-arrow">→</span>
+                            <span class="target-fuel">100</span>
+                        </div>
+                        <span class="gauge-unit">%</span>
+                    </div>
+                </div>
+
+                <!-- Fuel Amount Controls -->
+                <div class="fuel-controls">
+                    <button class="control-btn minus" id="fuel-minus">−</button>
+                    <div class="fuel-slider-container">
+                        <input type="range" id="fuel-slider" class="fuel-slider" min="0" max="100" value="100">
+                        <div class="slider-fill" id="slider-fill"></div>
+                    </div>
+                    <button class="control-btn plus" id="fuel-plus">+</button>
+                </div>
+
+                <!-- Price Display -->
+                <div class="price-display">
+                    <div class="price-row">
+                        <span class="price-label">Fuel to add:</span>
+                        <span class="price-value" id="fuel-to-add">25%</span>
+                    </div>
+                    <div class="price-row total">
+                        <span class="price-label">Total Cost:</span>
+                        <span class="price-value" id="total-cost">$125</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="action-btn cancel" id="cancel-btn">
+                        <span class="btn-text">Cancel</span>
+                        <span class="btn-hint">[ESC]</span>
+                    </button>
+                    <button class="action-btn confirm" id="confirm-btn">
+                        <span class="btn-text">Refuel</span>
+                        <span class="btn-hint">[E]</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refueling Progress (shown during refueling) -->
+    <div id="refuel-progress" class="refuel-progress hidden">
+        <div class="progress-container">
+            <div class="progress-header">
+                <span class="progress-title">Refueling...</span>
+                <span class="progress-cancel">[ESC] Cancel</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-info">
+                <span class="progress-fuel" id="progress-fuel">75%</span>
+                <span class="progress-cost" id="progress-cost">$50</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

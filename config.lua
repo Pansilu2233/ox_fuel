@@ -50,5 +50,35 @@ return {
 		`prop_gas_pump_1c`,
 		`prop_gas_pump_1b`,
 		`prop_gas_pump_1d`,
-	}
+	},
+
+	-- UI Settings
+	-- Enable/disable new NUI (fallback to ox_lib progress when false)
+	UseNUI = true,
+
+	-- Show fuel gauge HUD while driving
+	ShowFuelHUD = true,
+
+	-- UI position options: 'bottom-right', 'bottom-left', 'top-right', 'top-left'
+	HUDPosition = 'bottom-right',
+
+	-- Framework Settings
+	-- 'auto' - Auto-detect framework
+	-- 'qbox' - Force QBOX framework
+	-- 'qb-core' - Force QB-Core framework
+	-- 'esx' - Force ESX framework
+	-- 'ox_core' - Force ox_core framework
+	-- 'standalone' - Force standalone mode (ox_inventory only)
+	Framework = 'auto',
+
+	-- NUI Theme Settings
+	UITheme = {
+		primaryColor = '#00ff00',
+		secondaryColor = '#ffffff',
+		dangerColor = '#ff0000',
+		warningColor = '#ffaa00',
+	},
+
+	-- Debug mode (prints framework detection info)
+	Debug = false,
 }

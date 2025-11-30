@@ -3,6 +3,15 @@ local state = require 'client.state'
 local utils = require 'client.utils'
 local fuel = {}
 
+-- Lazy load NUI module to avoid circular dependency
+local NUI
+local function getNUI()
+	if not NUI then
+		NUI = require 'client.nui'
+	end
+	return NUI
+end
+
 ---@param vehState StateBag
 ---@param vehicle integer
 ---@param amount number
@@ -45,7 +54,8 @@ function fuel.getPetrolCan(coords, refuel)
 	ClearPedTasks(cache.ped)
 end
 
-function fuel.startFueling(vehicle, isPump)
+-- Start fueling with classic ox_lib progress (fallback)
+function fuel.startFuelingClassic(vehicle, isPump)
 	local vehState = Entity(vehicle).state
 	local fuelAmount = vehState.fuel or GetVehicleFuelLevel(vehicle)
 	local duration = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
@@ -136,5 +146,95 @@ function fuel.startFueling(vehicle, isPump)
 		TriggerServerEvent('ox_fuel:updateFuelCan', durability, NetworkGetNetworkIdFromEntity(vehicle), fuelAmount)
 	end
 end
+
+-- Start fueling with NUI
+function fuel.startFuelingNUI(vehicle, targetFuel)
+	local nui = getNUI()
+	local vehState = Entity(vehicle).state
+	local startFuel = vehState.fuel or GetVehicleFuelLevel(vehicle)
+	local fuelAmount = startFuel
+	local price = 0
+	local moneyAmount = utils.getMoney()
+
+	if 100 - fuelAmount < config.refillValue then
+		return lib.notify({ type = 'error', description = locale('tank_full') })
+	end
+
+	if config.priceTick > moneyAmount then
+		return lib.notify({
+			type = 'error',
+			description = locale('not_enough_money', config.priceTick)
+		})
+	end
+
+	state.isFueling = true
+
+	TaskTurnPedToFaceEntity(cache.ped, vehicle, 1000)
+	Wait(500)
+
+	-- Show NUI progress
+	nui.showRefuelProgress(fuelAmount, targetFuel)
+
+	-- Play animation
+	lib.requestAnimDict('timetable@gardener@filling_can')
+	TaskPlayAnim(cache.ped, 'timetable@gardener@filling_can', 'gar_ig_5_filling_can', 8.0, 8.0, -1, 49, 0, false, false, false)
+
+	while state.isFueling do
+		price += config.priceTick
+
+		if price + config.priceTick >= moneyAmount then
+			state.isFueling = false
+			break
+		end
+
+		fuelAmount += config.refillValue
+
+		-- Update NUI progress
+		nui.updateRefuelProgress(fuelAmount, targetFuel, price)
+
+		if fuelAmount >= targetFuel then
+			state.isFueling = false
+			fuelAmount = targetFuel
+		end
+
+		Wait(config.refillTick)
+	end
+
+	ClearPedTasks(cache.ped)
+	nui.hideRefuelProgress()
+
+	-- Show HUD again if in vehicle
+	if cache.seat == -1 and cache.vehicle then
+		nui.showHUD(fuelAmount)
+	end
+
+	TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle))
+end
+
+-- Main fueling function - routes to NUI or classic based on config
+function fuel.startFueling(vehicle, isPump)
+	local nui = getNUI()
+	
+	-- For petrol can, always use classic method
+	if not isPump then
+		return fuel.startFuelingClassic(vehicle, isPump)
+	end
+	
+	-- For pump, check if NUI is enabled and show interface
+	if config.UseNUI and nui.isEnabled() then
+		-- Show pump interface
+		nui.showPumpInterface(vehicle)
+	else
+		-- Use classic ox_lib progress
+		fuel.startFuelingClassic(vehicle, isPump)
+	end
+end
+
+-- Event handler for NUI refuel confirmation
+AddEventHandler('ox_fuel:startNUIRefuel', function(vehicle, targetFuel)
+	if vehicle and DoesEntityExist(vehicle) then
+		fuel.startFuelingNUI(vehicle, targetFuel)
+	end
+end)
 
 return fuel
