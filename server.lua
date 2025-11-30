@@ -6,6 +6,15 @@ if config.versionCheck then lib.versionCheck('overextended/ox_fuel') end
 
 local ox_inventory = exports.ox_inventory
 
+-- Load bridge for framework support
+local Bridge = require 'bridge.server'
+local Framework = require 'bridge.framework'
+
+-- Debug log for framework detection
+if config.Debug then
+	print(('[ox_fuel] Server initialized with framework: %s'):format(Framework.getName()))
+end
+
 local function setFuelState(netId, fuel)
 	local vehicle = NetworkGetEntityFromNetworkId(netId)
 
@@ -23,13 +32,29 @@ end
 ---@param price number
 ---@return boolean?
 local function defaultPaymentMethod(playerId, price)
+	-- First try using the bridge for framework-specific money handling
+	local frameworkName = Framework.getName()
+	
+	if frameworkName ~= 'standalone' then
+		local playerMoney = Bridge.getMoney(playerId, 'cash')
+		
+		if playerMoney >= price then
+			local success = Bridge.removeMoney(playerId, price, 'cash')
+			if success then return true end
+		end
+		
+		Bridge.notify(playerId, locale('not_enough_money', price - playerMoney), 'error')
+		return false
+	end
+	
+	-- Fallback to ox_inventory for standalone
 	local success = ox_inventory:RemoveItem(playerId, 'money', price)
 
 	if success then return true end
 
-	local money = ox_inventory:GetItemCount(source, 'money')
+	local money = ox_inventory:GetItemCount(playerId, 'money')
 
-	TriggerClientEvent('ox_lib:notify', source, {
+	TriggerClientEvent('ox_lib:notify', playerId, {
 		type = 'error',
 		description = locale('not_enough_money', price - money)
 	})
@@ -41,6 +66,24 @@ exports('setPaymentMethod', function(fn)
 	payMoney = fn or defaultPaymentMethod
 end)
 
+-- Export to get current framework name
+exports('getFramework', function()
+	return Framework.getName()
+end)
+
+-- Export bridge functions for external use
+exports('getBridgeMoney', function(playerId, account)
+	return Bridge.getMoney(playerId, account)
+end)
+
+exports('bridgeRemoveMoney', function(playerId, amount, account)
+	return Bridge.removeMoney(playerId, amount, account)
+end)
+
+exports('bridgeAddMoney', function(playerId, amount, account)
+	return Bridge.addMoney(playerId, amount, account)
+end)
+
 RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid)
 	assert(type(price) == 'number', ('Price expected a number, received %s'):format(type(price)))
 	local source = source
@@ -49,10 +92,8 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid)
 	fuel = math.floor(fuel)
 	setFuelState(netid, fuel)
 
-	TriggerClientEvent('ox_lib:notify', source, {
-		type = 'success',
-		description = locale('fuel_success', fuel, price)
-	})
+	-- Use bridge notification for framework compatibility
+	Bridge.notify(source, locale('fuel_success', fuel, price), 'success')
 end)
 
 RegisterNetEvent('ox_fuel:fuelCan', function(hasCan, price)
@@ -67,26 +108,17 @@ RegisterNetEvent('ox_fuel:fuelCan', function(hasCan, price)
 
 		ox_inventory:SetMetadata(source, item.slot, item.metadata)
 
-		TriggerClientEvent('ox_lib:notify', source, {
-			type = 'success',
-			description = locale('petrolcan_refill', price)
-		})
+		Bridge.notify(source, locale('petrolcan_refill', price), 'success')
 	else
 		if not ox_inventory:CanCarryItem(source, 'WEAPON_PETROLCAN', 1) then
-			return TriggerClientEvent('ox_lib:notify', source, {
-				type = 'error',
-				description = locale('petrolcan_cannot_carry')
-			})
+			return Bridge.notify(source, locale('petrolcan_cannot_carry'), 'error')
 		end
 
 		if not payMoney(source, price) then return end
 
 		ox_inventory:AddItem(source, 'WEAPON_PETROLCAN', 1)
 
-		TriggerClientEvent('ox_lib:notify', source, {
-			type = 'success',
-			description = locale('petrolcan_buy', price)
-		})
+		Bridge.notify(source, locale('petrolcan_buy', price), 'success')
 	end
 end)
 

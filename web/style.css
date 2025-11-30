@@ -1,0 +1,559 @@
+/* CSS Variables for theming */
+:root {
+    --primary-color: #00ff00;
+    --secondary-color: #ffffff;
+    --danger-color: #ff0000;
+    --warning-color: #ffaa00;
+    --bg-color: rgba(0, 0, 0, 0.85);
+    --glass-bg: rgba(20, 20, 20, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+}
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-primary);
+    overflow: hidden;
+    user-select: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progressGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px var(--primary-color)); }
+    50% { filter: drop-shadow(0 0 15px var(--primary-color)); }
+}
+
+/* Fuel HUD Styles */
+.fuel-hud {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.fuel-hud.position-bottom-left {
+    right: auto;
+    left: 30px;
+}
+
+.fuel-hud.position-top-right {
+    bottom: auto;
+    top: 30px;
+}
+
+.fuel-hud.position-top-left {
+    bottom: auto;
+    right: auto;
+    top: 30px;
+    left: 30px;
+}
+
+.hud-gauge {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.hud-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.hud-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 6;
+}
+
+.hud-ring-progress {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+}
+
+.hud-ring-progress.warning {
+    stroke: var(--warning-color);
+}
+
+.hud-ring-progress.danger {
+    stroke: var(--danger-color);
+    animation: progressGlow 1.5s ease-in-out infinite;
+}
+
+.hud-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.fuel-icon {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.hud-value {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.hud-unit {
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+/* Pump Interface Styles */
+.pump-interface {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.pump-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 0;
+    width: 380px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    animation: slideUp 0.4s ease-out;
+}
+
+.pump-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.pump-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.close-btn:hover {
+    background: rgba(255, 0, 0, 0.3);
+    transform: scale(1.1);
+}
+
+.pump-body {
+    padding: 25px;
+}
+
+/* Fuel Display / Gauge */
+.fuel-display {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 25px;
+}
+
+.fuel-gauge {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.08);
+    stroke-width: 12;
+}
+
+.gauge-progress {
+    fill: none;
+    stroke: var(--primary-color);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 534;
+    stroke-dashoffset: 534;
+    transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+}
+
+.gauge-progress.warning {
+    stroke: var(--warning-color);
+}
+
+.gauge-progress.danger {
+    stroke: var(--danger-color);
+}
+
+.gauge-target {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.3);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 534;
+    stroke-dashoffset: 534;
+    transition: stroke-dashoffset 0.3s ease;
+}
+
+.gauge-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-icon {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.gauge-values {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.current-fuel {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.fuel-arrow {
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.target-fuel {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.gauge-unit {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 5px;
+}
+
+/* Fuel Controls */
+.fuel-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.control-btn {
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.fuel-slider-container {
+    flex: 1;
+    position: relative;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fuel-slider {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.slider-fill {
+    position: absolute;
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-color));
+    border-radius: 4px;
+    transition: width 0.1s ease;
+}
+
+/* Price Display */
+.price-display {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.price-row:not(:last-child) {
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.price-row.total {
+    padding-top: 12px;
+}
+
+.price-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.price-value {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.price-row.total .price-value {
+    font-size: 20px;
+    color: var(--primary-color);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.action-btn.cancel:hover {
+    background: rgba(255, 0, 0, 0.2);
+}
+
+.action-btn.confirm {
+    background: var(--primary-color);
+    color: #000;
+}
+
+.action-btn.confirm:hover {
+    filter: brightness(1.2);
+    transform: scale(1.02);
+}
+
+.action-btn.confirm:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-hint {
+    font-size: 11px;
+    opacity: 0.6;
+    font-weight: normal;
+}
+
+/* Refueling Progress */
+.refuel-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.progress-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 25px;
+    width: 350px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.progress-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.progress-cancel {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+}
+
+.progress-bar-container {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary-color), #00cc00);
+    border-radius: 6px;
+    transition: width 0.2s ease;
+    position: relative;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-fuel {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.progress-cost {
+    font-size: 16px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .pump-container {
+        width: 95%;
+        max-width: 380px;
+    }
+    
+    .fuel-display {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/* High DPI displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+    .pump-container,
+    .progress-container {
+        border-width: 0.5px;
+    }
+}
